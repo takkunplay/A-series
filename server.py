@@ -9,7 +9,11 @@ def main():
 @app.route('/money/<user>')
 def show_user_profile(user):
     # show the user profile for that user
-    return str(db["money"][user])
+    try:
+      money=str(db["money"][user])
+    except:
+      return "情報がﾅｲ!"
+    return str(money)
 @app.route("/login")
 @app.route("/kaso")
 def kaso():

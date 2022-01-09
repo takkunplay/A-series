@@ -1,24 +1,22 @@
-import os
-import pprint
-import time,asyncio
+import os,pprint,time,asyncio,datetime
 import urllib.error
 import urllib.request, requests
 import discord,random,sys
 from server import keep_alive
 from replit import db
-from discord.ext import tasks
+from discord.ext import tasks, commands
 import xml.etree.ElementTree as ET
 TOKEN = os.environ['token']
 btid = [""]
 from discord.ext import commands
-
 bot = commands.Bot(command_prefix='=')
 # 接続に必要なオブジェクトを生成
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
-
+tz_jst = datetime.timezone(datetime.timedelta(hours=9))
 # parameters
+
 STM="=help|あゆさんまじ神"
 #imgutil.mkdir(path)
 mutes=[533698325203910668,159985870458322944,894191491277258752,411916947773587456,282859044593598464]
@@ -29,26 +27,30 @@ response = []
 img_list = []
 #db["kaso"]=311
 @tasks.loop(seconds=1)
-async def looping():
-  try:
+async def restc():
+  now=datetime.datetime.now(tz_jst).strftime("%H:%M:%S")
+  #print(now)
+  if now=="00:00:00":
     channel=client.get_channel(906399117692010576)
-    await channel.send(s)
-    os.remove("/home/pi/メッセージ")
-  except:
-    pass
+    await channel.send("今日は"+str(db["cc"])+"回発言できました！")
+    print("reset")
+    db["cc"]=0
+@tasks.loop(seconds=10)
+async def showjp():
+  game = discord.Game("=help|JP:"+str(db["jp"]/10)+"|"+datetime.datetime.now(tz=tz_jst).strftime("%H:%M:%S"))
+  await client.change_presence(status=discord.Status.online, activity=game)
 sex="丗糶背瀬畝競施世攻責勢谷扠設政生性製成説選聖"
 @client.event
 async def on_ready():
   # 起動したらターミナルにログイン通知が表示される
   print("loguined")
-  game = discord.Game(STM)
-  await client.change_presence(status=discord.Status.online, activity=game)
   channel=client.get_channel(906399117692010576)
   user=await client.fetch_user(713400700813705256)
   dm=await user.create_dm()
+  restc.start()
   #await channel.send("=help g")
   channel=client.get_channel(912536602071420969)
-  
+  showjp.start()
   await channel.connect()
   channel=client.get_channel(906399117692010576)
   if db["rb"]==True:
@@ -56,6 +58,15 @@ async def on_ready():
   db["rb"]=False
 @client.event
 async def on_message(message):
+  mentn="<@!"+str(message.author.id)+">\n"
+  db["cc"]+=1
+  db["jp"]+=random.randint(1,3)
+  if db["cc"]%100==0:
+    db["money"][str(message.author.id)]+=100
+    await message.reply("あなたは今日の"+str(db["cc"])+"回目の発言者です！\nお礼として少しお金アゲます("+str(db["money"][str(message.author.id)])+")")
+  if message.content=="=sd":
+    await message.delete()
+    await message.channel.send("今日は"+str(db["cc"])+"回喋りました")
   if message.content[:6]=="=money":
     moneys=db["money"]
     ido=str(message.author.id)
@@ -76,7 +87,14 @@ async def on_message(message):
     db["money"][ido]=money+1
   if message.content=="=shop":
     await message.channel.send("準備中")
+  #if message.content=="kk":
+   # await message.channel.send("https://cdn.discordapp.com/attachments/907217066237517845/907219504176701440/image5.png")
+  #KaSo
+  if message.content=="=ks":
+    await message.reply("https://cdn.discordapp.com/attachments/911515551715708958/929342630096158750/ks.mov")
   #ギャンブル
+  if message.content[:2]=="=g" :
+    await message.delete()
     #半分倍
   if message.content=="=g bh":
     ido=str(message.author.id)
@@ -85,14 +103,14 @@ async def on_message(message):
     if money==1:
       kake=1
     if kake==0:
-      await message.reply("これ、かけるお金がﾅｲ！")
+      await message.channel.send(mentn+"これ、かけるお金がﾅｲ！")
       return
     if random.randint(1,2)==1:
       db["money"][ido]=money+(kake*2)
-      dme=await message.reply(str(kake)+"Aかけて*成功して*"+str(kake)+"A増えました("+str(money+(kake*2))+"A)")
+      dme=await message.channel.send(mentn+str(kake)+"Aかけて*成功して*"+str(kake)+"A増えました("+str(money+(kake*2))+"A)")
     else:
       db["money"][ido]=money-kake
-      dme=await message.reply(str(kake)+"Aかけましたが*失敗して*"+str(kake)+"A減りました("+str(money-kake)+"A)")
+      dme=await message.channel.send(mentn+str(kake)+"Aかけましたが*失敗して*"+str(kake)+"A減りました("+str(money-kake)+"A)")
     await asyncio.sleep(30)
     await dme.delete()
     #全財産ぶちまけイベント
@@ -104,10 +122,10 @@ async def on_message(message):
       return
     if random.randint(1,2)==1:
       db["money"][ido]=money*2
-      dme=await message.reply(str(money)+"Aかけて*成功して*"+str(money)+"A増えました("+str(money*2)+"A)")
+      dme=await message.channel.send(mentn+str(money)+"Aかけて*成功して*"+str(money)+"A増えました("+str(money*2)+"A)")
     else:
       db["money"][ido]=0
-      dme=await message.reply(str(money)+"Aかけましたが*失敗して*"+str(money)+"A減りました(0A)")
+      dme=await message.channel.send(mentn+str(money)+"Aかけましたが*失敗して*"+str(money)+"A減りました(0A)")
     await asyncio.sleep(30)
     await dme.delete()
   #pinpon
@@ -143,7 +161,7 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
       await message.channel.send("https://cdn.discordapp.com/attachments/906399117692010576/928447644592902174/kasokin.mov")
     else:
       await message.channel.send("https://cdn.discordapp.com/attachments/906399117692010576/914472044970795028/kasokin.mov")
-  if (message.content=="=kaso") or (message.content=="/kaso") or (message.content=="/kaso_n") or (message.content=="/kaso_i"):
+  if (message.content=="=kaso") or (message.content=="/kaso") or (message.content=="/kas") or (message.content=="/kaso_i") or (message.content=="$kaso"):
     db["kaso"]=db["kaso"]+1
     await message.channel.send("今までに"+str(db["kaso"])+"回過疎りました")
   if message.content=="=kaos":
@@ -308,10 +326,12 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
     while True:
       p = subprocess.Popen("python3 main.py", shell=True).wait()
       if p != 0:
-        continue
+        break
       else:
         break
-  
+  if message.content=="=restjp":
+    db["jp"]=10000
+    await message.reply(":+1:")
   if message.content[:4]=="=del":
     db["money"][message.content[5:]]=0
     await message.reply("<@!"+message.content[5:]+">の財産\nhttps://cdn.discordapp.com/attachments/906399117692010576/925892604950880256/kieuseta.mov")
