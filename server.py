@@ -14,7 +14,11 @@ def show_user_profile(user):
     except:
       return "情報がﾅｲ!"
     return str(money)
-@app.route("/login")
+@app.route("/msg")
+def msg():
+    with open("info.html") as f:
+      s = f.read()
+      return s
 @app.route("/kaso")
 def kaso():
     with open("kaso.html") as f:
@@ -25,7 +29,9 @@ def run():
     app.run("0.0.0.0", port=8080)
   except:
     db["rb"]=True
-
+@app.route('/mm')
+def minsay():
+    return str(db["mm"])
 def keep_alive():
   try:
     t = Thread(target=run)
