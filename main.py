@@ -1,3 +1,4 @@
+from replit import db
 import os,pprint,time,asyncio,datetime,pyttsx3
 import urllib.error
 import urllib.request, requests
@@ -17,7 +18,7 @@ client = discord.Client(intents=intents)
 tz_jst = datetime.timezone(datetime.timedelta(hours=9))
 #engine = pyttsx3.init()
 # parameters
-sjp=100000
+sjp=0
 STM="=help|あゆさんまじ神"
 #imgutil.mkdir(path)
 mutes=[533698325203910668,159985870458322944,894191491277258752,411916947773587456,282859044593598464]
@@ -68,14 +69,15 @@ async def on_ready():
   #await channel.send("=help g")
   channel=client.get_channel(912536602071420969)
   showjp.start()
-  await channel.connect()
   channel=client.get_channel(906399117692010576)
   #await channel.send(":+1:")
   db["rb"]=False
 @client.event
 async def on_message(message):
   global sm,mt,ksc
-  ido=str(message.author.id)
+  ids=str(message.author.id)
+  if message.channel.id==906399117692010576:
+    print(message.author.name+":"+message.content)
   ksc=message.channel.id
   if message.content=="=kaso":
     rnd=random.randint(0,6)
@@ -106,9 +108,9 @@ async def on_message(message):
   db["cc"]+=1
   db["jp"]+=mm
   if db["cc"]%100==0:
-    db["money"][str(message.author.id)]+=20
-    if mt==False:
-      await message.reply("あなたは今日の"+str(db["cc"])+"回目の発言者です！\nお礼として少しお金アゲます(+20A)")
+    db["money"][ido]+=10
+    #if mt==False:
+      #await message.reply("あなたは今日の"+str(db["cc"])+"回目の発言者です！\nお礼として少しお金アゲます(+20A)")
   if random.randint(1,3000)==1:
     db["money"][str(message.author.id)]+=int(db["jp"]/10)
     if mt==False:
@@ -127,15 +129,11 @@ async def on_message(message):
     else:
       money=moneys[ido]
     await message.reply(message.author.mention+":"+str(money)+"A")
-  if random.randint(0,9)==0:
+  if random.randint(1,4)==1:
     ido=str(message.author.id)
     moneys=db["money"]
     re=ido in moneys
-    if re==False:
-      money=0
-    else:
-      money=moneys[ido]
-    db["money"][ido]=money+1
+    db["money"][ido]+=1
   if message.content=="=shop":
     await message.channel.send("準備中")
   #if message.content=="kk":
@@ -211,8 +209,6 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
       await message.channel.send("今までに"+str(db["kaso"])+"回過疎りました")
   if message.content=="=kaos":
     await message.reply("もしかして:=kaso")
-  if (random.randint(0,500)==1) or (message.content[:2]=="設ｘ"):
-    await message.channel.send(sex[random.randint(0,len(sex)-1)]+"ｘしたい")
   #hey
   if message.content=="=hey 2 1":
     await message.channel.send("Hey! <@!347556496231366656>!")
@@ -294,18 +290,6 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
         pass
   if message.content=="=move":
      await message.guild.voice_client.move_to(message.author.voice.channel)
-  if message.content=="=ns":
-    role = message.guild.get_role(919543222450159636)
-    if None==discord.utils.get(message.author.roles, name='にんじんしりしり'):
-      await message.author.add_roles(role)
-    else:
-      await message.author.remove_roles(role)
-  if message.content=="=egg":
-    role = message.guild.get_role(919544905196511252)
-    if None==discord.utils.get(message.author.roles, id=919544905196511252):
-      await message.author.add_roles(role)
-    else:
-      await message.author.remove_roles(role)
   if message.content=="=ASD":
     await message.reply(":sunglasses:A-serise Special Delete:sunglasses:\n実行できるか確認しています...")
     await asyncio.sleep(3)
