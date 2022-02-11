@@ -10,14 +10,15 @@ import xml.etree.ElementTree as ET
 TOKEN = os.environ['token']
 btid = [""]
 mt=False
-bot = commands.Bot(command_prefix='=')
 # 接続に必要なオブジェクトを生成
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
+client = commands.Bot(command_prefix='=',intents=intents)
 tz_jst = datetime.timezone(datetime.timedelta(hours=9))
 #engine = pyttsx3.init()
 # parameters
+
 sjp=0
 STM="=help|あゆさんまじ神"
 #imgutil.mkdir(path)
@@ -40,8 +41,12 @@ async def restc():
   mml.append(sm)
   mm+=sm
   sm=0
+  if "mess" in db:
+    channel=client.get_channel(906399117692010576)
+    await channel.send(db["mess"])
+    del db["mess"]
   db["mm"]=mm
-  if len(mml)==61:
+  if len(mml)>60:
     mm-=mml[0]
     del mml[0]
   if now=="00:00:00":
@@ -62,22 +67,97 @@ sex="丗糶背瀬畝競施世攻責勢谷扠設政生性製成説選聖"
 async def on_ready():
   # 起動したらターミナルにログイン通知が表示される
   print("loguined")
-  channel=client.get_channel(906399117692010576)
-  user=await client.fetch_user(713400700813705256)
-  dm=await user.create_dm()
+  db["gparmax"]=1000
   restc.start()
-  #await channel.send("=help g")
-  channel=client.get_channel(912536602071420969)
   showjp.start()
-  channel=client.get_channel(906399117692010576)
-  #await channel.send(":+1:")
-  db["rb"]=False
+  #db["mame"]={}
+async def is_owner(ctx):
+  return ctx.author.id == 425948316334030848
+#helloworld
+@client.command()
+async def good(ctx):
+    await ctx.reply("どーもデース")
+#ハグ
+@client.command()
+async def hug(ctx):
+  await ctx.reply("ぎゅぅ...")
+@client.command()
+async def error_test(ctx):
+  await ctx.reply(1/0)
+#豆知識作成
+@client.command()
+async def addmame(ctx,*,mame):
+  if mame in db["mame"].values()==True:
+    embed=discord.Embed(title="エラー",description="この内容の豆知識はすでに存在します。")
+    await ctx.reply(embed=embed)
+    return
+  db["mame"][f"{ctx.message.id}"]=mame
+  embed=discord.Embed(title="作成しました",description=mame)
+  embed.set_footer(text=f"ID:{ctx.message.id}")
+  await ctx.reply(embed=embed)
+#豆知識表示
+@client.command()
+async def mame(ctx):
+  id, mame = random.choice(list(db["mame"].items()))
+  embed=discord.Embed(title="ヒカマニ豆知識",description=mame)
+  #embed.set_author(name="MAMETISIKIN",url="",icon_url="")
+  embed.set_footer(text=f"ID:{ctx.message.id}")
+  await ctx.send(embed=embed)
+#ギャンブル
+@client.command()
+async def gb(ctx,bm):
+  bm=int(bm)
+  if bm<0:
+    return
+  money=db["money"][f"{ctx.author.id}"]
+  if money<bm:
+    embed=discord.Embed(title="エラー！",description="所持金が足りません")
+    embed.add_field(name="所持金",value=f"{money}")
+    await ctx.reply(embed=embed)
+    return
+  dg=random.randint(1,db["gparmax"])
+  print(f"{dg}:"+str(db["gpar"]))
+  if db["gpar"]>=dg:
+    await ctx.reply(f"当たり！\n{money}A+{bm}A={money+bm}A")
+    money+=bm
+    db["gpar"]-=bm
+  else:
+    await ctx.reply(f"ハズレ！\n{money}A-{bm}A={money-bm}A")
+    money-=bm
+    db["gpar"]+=bm
+  db["money"][f"{ctx.author.id}"]=money
+#エラー出力
+@client.event
+async def on_command_error(ctx, error):
+  print(type(error))
+  if type(error)==discord.ext.commands.errors.CommandNotFound:
+    return
+  ch = 941548086294106133
+  embed = discord.Embed(title="エラー情報", description="", color=0xf00)
+  embed.add_field(name="エラー発生サーバー名", value=ctx.guild.name, inline=False)
+  embed.add_field(name="エラー発生サーバーID", value=ctx.guild.id, inline=False)
+  embed.add_field(name="エラー発生ユーザー名", value=ctx.author.name, inline=False)
+  embed.add_field(name="エラー発生ユーザーID", value=ctx.author.id, inline=False)
+  embed.add_field(name="エラー発生コマンド", value=ctx.message.content, inline=False)
+  embed.add_field(name="発生エラー", value=error, inline=False)
+  m = await client.get_channel(ch).send(embed=embed)
+  await ctx.send(f"何らかのエラーが発生しました。ごめんなさい。\nこのエラーについて問い合わせるときはこのコードも一緒にお知らせください：{m.id}")
+#エラー取得
+@client.command()
+@commands.is_owner()
+async def get_error(ctx, error_id):
+    await ctx.send(embed = (await bot.get_channel(941548086294106133).fetch_message(error_id)).embeds[0])
 @client.event
 async def on_message(message):
   global sm,mt,ksc
-  ids=str(message.author.id)
+  ido=str(message.author.id)
+  if ido not in db["money"]:
+    db["money"][ido]=0
   if message.channel.id==906399117692010576:
     print(message.author.name+":"+message.content)
+    db["mes"].append(message.author.name+":"+message.content)
+    if len(db["mes"])>30:
+      del db["mes"][0]
   ksc=message.channel.id
   if message.content=="=kaso":
     rnd=random.randint(0,6)
@@ -93,9 +173,9 @@ async def on_message(message):
     db["kaso"]=db["kaso"]+1
     await channel.send("今までに"+str(db["kaso"])+"回過疎りました")
   if message.content=="=katsuage":
-    await message.reply("カツアゲ　やめて...(+"+str(db["money"]["906399117692010576"])+"A)")
-    db["money"][ido]+=db["money"]["906399117692010576"]
-    db["money"]["906399117692010576"]=0
+    await message.reply("カツアゲ　やめて...(+"+str(db["money"]["441098719803211788"])+"A)")
+    db["money"][ido]+=db["money"]["441098719803211788"]
+    db["money"]["441098719803211788"]=0
   if message.content=="=mute":
     if mt==False:
       mt=True
@@ -141,45 +221,6 @@ async def on_message(message):
   #KaSo
   if message.content=="=ks":
     await message.reply("https://cdn.discordapp.com/attachments/911515551715708958/929342630096158750/ks.mov")
-  #ギャンブル
-  if message.content[:2]=="=g" :
-    await message.delete()
-    #半分倍
-  if message.content=="=g bh":
-    ido=str(message.author.id)
-    money=db["money"][ido]
-    kake=int(money/2)
-    if money==1:
-      kake=1
-    if kake==0:
-      await message.channel.send(mentn+"これ、かけるお金がﾅｲ！")
-      return
-    if random.randint(0,99)==0:
-      db["money"][ido]=0
-      dme=await message.channel.send(mentn+"残念ながらあなたの財産はこの世から消え失せました...")
-    elif random.randint(1,2)==1:
-      db["money"][ido]=money+(kake*2)
-      dme=await message.channel.send(mentn+str(kake)+"Aかけて*成功して*"+str(kake)+"A増えました("+str(money+(kake*2))+"A)")
-    else:
-      db["money"][ido]=money-kake
-      dme=await message.channel.send(mentn+str(kake)+"Aかけましたが*失敗して*"+str(kake)+"A減りました("+str(money-kake)+"A)")
-    await asyncio.sleep(30)
-    await dme.delete()
-    #全財産ぶちまけイベント
-  if message.content=="=g ba":
-    ido=str(message.author.id)
-    money=db["money"][ido]
-    if money==0:
-      await message.reply("これ、かけるお金がﾅｲ！")
-      return
-    if random.randint(1,2)==1:
-      db["money"][ido]=money*3
-      dme=await message.channel.send(mentn+str(money)+"Aかけて*成功して*"+str(money*2)+"A増えました("+str(money*3)+"A)")
-    else:
-      db["money"][ido]=0
-      dme=await message.channel.send(mentn+str(money)+"Aかけましたが*失敗して*"+str(money)+"A減りました(0A)")
-    await asyncio.sleep(30)
-    await dme.delete()
   #pinpon
   if message.content=="=ping":
     raw_ping = client.latency
@@ -192,17 +233,12 @@ async def on_message(message):
 =kaso:過疎を防止します。
 =money:所持金を表示します
 =hey <〇〇>:誰かを呼びます(help heyで詳細)
-=g:ギャンブルします(help gで詳細)
 https://onl.tw/EnNEE4u :ステータスを表示します""")
   if message.content=="=help hey":
     await message.reply("""
 =hey 2 1:2 1さんを呼びます
 =hey ayu:あゆさんを呼びます
 =hey rami:ラミエルさんを呼びます)""")
-  if message.content=="=help g":
-    await message.reply("""
-=g bh:全財産の半分を倍にします
-=g ba:全財産を倍にします""")
   if (message.content=="/kaso") or (message.content=="/kas") or (message.content=="/kaso_i") or (message.content=="$kaso")or (message.content=="/kaso_a"):
     db["kaso"]=db["kaso"]+1
     if mt==False:
@@ -268,7 +304,6 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
     message.guild.voice_client.play(discord.FFmpegPCMAudio("kasokin.mp3"))
   if message.content=="/rns":
     if random.randint(0,14)==0:
-      
       try:
         message.guild.voice_client.stop()
         user=await message.guild.fetch_member(894191491277258752)
@@ -348,6 +383,10 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
     await me.edit(nick=message.content[6:])
   if message.content=="=info":
     pass
+  try:
+    await client.process_commands(message)
+  except CommandNotFound:
+    pass
   #bot管理者以外立入禁止
   if (message.author.id!=425948316334030848) and (message.author.id!=441098719803211788):
     return
@@ -374,8 +413,7 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
       await message.delete()
       rm=await message.channel.fetch_message(message.reference.message_id)
       await rm.reply(message.content[5:])
+  
 rb=keep_alive()
-try:
-  client.run(TOKEN)
-except:
-  pass
+
+client.run(TOKEN)

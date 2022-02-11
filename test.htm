@@ -1,0 +1,79 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>キー入力イベント【3DSブラウザ】</title>
+<meta name="description" content="3DSブラウザのキー入力イベントをチェックします。" />
+<meta name="viewport" content="width=320" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<link rel="SHORTCUT ICON" href="../summerclap.ico" />
+<link rel="StyleSheet" type="text/css" href="../3ds.css" />
+
+<script type="text/javascript">
+// エレメントにイベント関数を追加する
+var addEvent = window.addEventListener ?
+	function(element, type, func){ element.addEventListener(type, func, false); } :
+	function(element, type, func){ element.attachEvent("on"+type, func); };
+// エレメントからイベント関数を削除する
+var removeEvent = window.removeEventListener ?
+	function(element, type, func){ element.removeEventListener(type, func, false); } :
+	function(element, type, func){ element.detachEvent("on"+type, func); };
+// イベントのデフォルト動作を抑制する
+function preventDefault(event){ if(event.preventDefault){event.preventDefault();}else{event.returnValue = false;} }
+
+var count = 0;
+
+// キーダウン処理
+function onKeyDown(event)
+{
+	document.getElementById("txKeyDown").value = event.keyCode;
+	document.getElementById("txCount").value = ++count;
+	preventDefault(event);
+}
+// キーアップ処理
+function onKeyUp(event)
+{
+	document.getElementById("txKeyUp").value = event.keyCode;
+	document.getElementById("txCount").value = ++count;
+	preventDefault(event);
+}
+
+//キーイベント登録
+addEvent(document, "keydown", onKeyDown);
+addEvent(document, "keyup", onKeyUp);
+
+</script>
+
+</head>
+<body>
+
+<h3>キー入力イベント</h3>
+<noscript><span class="warning">JavaScriptが無効になっています。</span><br /></noscript>
+
+<div style="line-height:180%;">
+keydown <input type="text" id="txKeyDown" size="5" value="" /><br />
+keyup <input type="text" id="txKeyUp" size="5" value="" /><br />
+count <input type="text" id="txCount" size="5" value="" /><br />
+</div>
+
+<hr />
+　計測したキーコードは以下の一覧の通りとなります。<br />
+<table class="result" summary="キーコード表"><tbody class="digit">
+<tr><th abbr="3DSのボタン">キー</th><th abbr="計測したキーコード">コード</th></tr>
+<tr><td>←</td><td>37</td></tr>
+<tr><td>↑</td><td>38</td></tr>
+<tr><td>→</td><td>39</td></tr>
+<tr><td>↓</td><td>40</td></tr>
+<tr><td>(A)</td><td>13</td></tr>
+</tbody></table>
+　PC用ブラウザのカーソルキー・エンターキーと同じコードが返りました。<br />
+　十字キーの上下を押すとフォーカスが移動し画面がスクロールしてしまいます。また、Aボタンを押すと選択したリンクを踏んだりテキストボックスへの入力モードになったります。Bボタンを押すと何も選択していない状態になるようです。<br />
+　ゲーム中ではこれらのデフォルトの動作をキャンセルしたいところですが、event.preventDefault()を実行しても効果がありませんでした。Wiiのブラウザでは有効だったのですが……。もう少し検証が必要そうです。<br />
+<hr />
+<a href="../index.html">戻る</a>
+
+</body>
+</html>

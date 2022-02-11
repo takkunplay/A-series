@@ -1,0 +1,25 @@
+<head>
+  <script>
+    let user_id = document.getElementById("name");
+    setInterval(get_id, 3000);
+    function get_id(){
+      let main_url = "https://a-series.obktvjobk-dtv.repl.co/mes/ops";
+      let content = `<iframe src="${main_url}" frameborder="0" width="700" height="300"></iframe>`
+      document.getElementById("attach").innerHTML = content
+    }
+    function messend(){
+      let user_id = document.getElementById("name").value;
+      let main_url = "https://a-series.obktvjobk-dtv.repl.co/mes/032/"+user_id;
+      let content = `<iframe src="${main_url}" frameborder="0" width="700" height="300"></iframe>`
+      document.getElementById("attach").innerHTML = content
+    }
+  </script>
+</head>
+<body>
+  <div id="attach"></div>
+  <input type="text" id="name">
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <br>
+  <input type="submit" name="send" value="メッセージを送信" onclick="messend();">
+</body>
+

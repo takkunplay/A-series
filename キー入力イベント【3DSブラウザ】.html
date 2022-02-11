@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0055)http://www5b.biglobe.ne.jp/~clap/3ds/test/keyevent.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>キー入力イベント【3DSブラウザ】</title>
+<meta name="description" content="3DSブラウザのキー入力イベントをチェックします。">
+<meta name="viewport" content="width=320">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="SHORTCUT ICON" href="http://www5b.biglobe.ne.jp/~clap/3ds/summerclap.ico">
+<link rel="StyleSheet" type="text/css" href="./キー入力イベント【3DSブラウザ】_files/3ds.css">
+
+<script type="text/javascript">
+// エレメントにイベント関数を追加する
+var addEvent = window.addEventListener ?
+	function(element, type, func){ element.addEventListener(type, func, false); } :
+	function(element, type, func){ element.attachEvent("on"+type, func); };
+// エレメントからイベント関数を削除する
+var removeEvent = window.removeEventListener ?
+	function(element, type, func){ element.removeEventListener(type, func, false); } :
+	function(element, type, func){ element.detachEvent("on"+type, func); };
+// イベントのデフォルト動作を抑制する
+function preventDefault(event){ if(event.preventDefault){event.preventDefault();}else{event.returnValue = false;} }
+
+var count = 0;
+
+// キーダウン処理
+function onKeyDown(event)
+{
+	document.getElementById("txKeyDown").value = event.keyCode;
+	document.getElementById("txCount").value = ++count;
+	preventDefault(event);
+}
+// キーアップ処理
+function onKeyUp(event)
+{
+	document.getElementById("txKeyUp").value = event.keyCode;
+	document.getElementById("txCount").value = ++count;
+	preventDefault(event);
+}
+
+//キーイベント登録
+addEvent(document, "keydown", onKeyDown);
+addEvent(document, "keyup", onKeyUp);
+
+</script>
+
+</head>
+<body>
+
+<h3>キー入力イベント</h3>
+<noscript><span class="warning">JavaScriptが無効になっています。</span><br /></noscript>
+
+<div style="line-height:180%;">
+keydown <input type="text" id="txKeyDown" size="5" value=""><br>
+keyup <input type="text" id="txKeyUp" size="5" value=""><br>
+count <input type="text" id="txCount" size="5" value=""><br>
+</div>
+
+<hr>
+　計測したキーコードは以下の一覧の通りとなります。<br>
+<table class="result" summary="キーコード表"><tbody class="digit">
+<tr><th abbr="3DSのボタン">キー</th><th abbr="計測したキーコード">コード</th></tr>
+<tr><td>←</td><td>37</td></tr>
+<tr><td>↑</td><td>38</td></tr>
+<tr><td>→</td><td>39</td></tr>
+<tr><td>↓</td><td>40</td></tr>
+<tr><td>(A)</td><td>13</td></tr>
+</tbody></table>
+　PC用ブラウザのカーソルキー・エンターキーと同じコードが返りました。<br>
+　十字キーの上下を押すとフォーカスが移動し画面がスクロールしてしまいます。また、Aボタンを押すと選択したリンクを踏んだりテキストボックスへの入力モードになったります。Bボタンを押すと何も選択していない状態になるようです。<br>
+　ゲーム中ではこれらのデフォルトの動作をキャンセルしたいところですが、event.preventDefault()を実行しても効果がありませんでした。Wiiのブラウザでは有効だったのですが……。もう少し検証が必要そうです。<br>
+<hr>
+<a href="http://www5b.biglobe.ne.jp/~clap/3ds/index.html">戻る</a>
+
+
+
+</body><span style="--colorTabBar:var(--colorBg); --colorFg:#dbdbdb; --colorFgAlpha:#dbdbdb1a; --colorFgIntense:#ffffff; --colorFgFaded:#d0d0d0; --colorFgFadedMore:#c5c5c5; --colorFgFadedMost:#acacac; --colorBg:#2f2f2f; --colorBgAlpha:#2f2f2fe6; --colorBgAlphaHeavy:#2f2f2fa6; --colorBgAlphaHeavier:#2f2f2f40; --colorBgAlphaBlur:#2f2f2fbf; --colorBgDark:#292929; --colorBgDarker:#242424; --colorBgLight:#333333; --colorBgLighter:#434343; --colorBgLightIntense:#373737; --colorBgIntense:#242424; --colorBgIntenser:#1c1c1c; --colorBgIntserAlpha:#191919eb; --colorBgInverse:#333333; --colorBgInverser:#3f3f3f; --colorBgFaded:#3b3b3b; --colorHighlightBg:#579c8e; --colorHighlightBgUnfocused:#454545; --colorHighlightBgAlpha:#579c8e1a; --colorHighlightBgDark:#3f8477; --colorHighlightFg:#ffffff; --colorHighlightFgAlpha:#ffffff80; --colorHighlightFgAlphaHeavy:#ffffff40; --colorAccentBg:#404040; --colorAccentBgAlpha:#74747466; --colorAccentBgAlphaHeavy:#74747440; --colorAccentBgDark:#303030; --colorAccentBgDarker:#1a1a1a; --colorAccentBgFaded:#343434; --colorAccentBgFadedMore:#555555; --colorAccentBgFadedMost:#747474; --colorAccentBorder:#383838; --colorAccentBorderDark:#2e2e2e; --colorAccentFg:#ffffff; --colorAccentFgFaded:#cacaca; --colorAccentFgAlpha:#ffffff40; --colorBorder:#1c1c1c; --colorBorderDisabled:#242424; --colorBorderSubtle:#222222; --colorBorderIntense:#0c0c0c; --colorSuccessBg:#06a700; --colorSuccessBgAlpha:#06a7001a; --colorSuccessFg:#ffffff; --colorWarningBg:#efaf00; --colorWarningBgAlpha:#efaf001a; --colorWarningFg:#000000; --colorErrorBg:#c64539; --colorErrorBgAlpha:#c645391a; --colorErrorFg:#ffffff; --colorWindowBg:#1d1e21; --colorWindowFg:#ffffff; --radiusRound:100px; --radiusRounded:2px; --radiusRoundedLess:2px; --radius:4px; --radiusHalf:2px; --scrollbarWidth:12px;"></span></html>

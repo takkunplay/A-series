@@ -19,6 +19,27 @@ authorize_params = {
 @app.route("/")
 def main():
   return "ヒカキンTVでケツの穴とか言ったことあんまないけど"
+@app.route("/mes/032/<mes>")
+def messend(mes):
+  if mes==";":
+    aos=""
+    for mes in db["mes"]:
+      aos+=mes+"<br>"
+      aos+="""<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="refresh" content="5; URL=">
+    <title>Document</title>
+</head>"""
+    return aos
+  db["mess"]=mes
+  return redirect('/mes/032/;')
+@app.route("/mes/ops")
+def mesread():
+  aos=""
+  for mes in db["mes"]:
+    aos+=mes+"<br>"
+  return aos
 @app.route('/money/<user>')
 def show_user_profile(user):
     # show the user profile for that user
@@ -27,9 +48,15 @@ def show_user_profile(user):
     except:
       return "情報がﾅｲ!"
     return str(money)
+
 @app.route("/help")
 def msg():
     with open("help.htm") as f:
+      s = f.read()
+      return s
+@app.route("/test")
+def test():
+    with open("test.htm") as f:
       s = f.read()
       return s
 @app.route("/kaso")
@@ -37,9 +64,14 @@ def kaso():
     with open("kaso.html") as f:
       s = f.read()
       return s
+@app.route("/mes/02")
+def mes():
+    with open("msgsend.htm") as f:
+      s = f.read()
+      return s
 def run():
   try:
-    app.run("0.0.0.0", port=8080)
+    app.run("0.0.0.0", port=8080,debug=False)
   except:
     db["rb"]=True
 @app.route('/mm')
