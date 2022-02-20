@@ -1,16 +1,21 @@
+import sys
+import os
+os.system('pip install git+https://github.com/Pycord-Development/pycord')
 from replit import db
-import os,pprint,time,asyncio,datetime,pyttsx3
+import pprint,time,asyncio,datetime,pyttsx3
 import urllib.error
 import urllib.request, requests
-import discord,random,sys
+import discord,random
 from server import keep_alive
 from replit import db
 from discord.ext import tasks, commands
+from discord.commands import Option,permissions
 import xml.etree.ElementTree as ET
 TOKEN = os.environ['token']
 btid = [""]
 mt=False
 # 接続に必要なオブジェクトを生成
+OWNER=425948316334030848
 intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
@@ -18,7 +23,8 @@ client = commands.Bot(command_prefix='=',intents=intents)
 tz_jst = datetime.timezone(datetime.timedelta(hours=9))
 #engine = pyttsx3.init()
 # parameters
-
+lu=0
+rank={"0":0}
 sjp=0
 STM="=help|あゆさんまじ神"
 #imgutil.mkdir(path)
@@ -57,11 +63,14 @@ async def restc():
 @tasks.loop(seconds=10)
 async def showjp():
   global mm,mml
+  game = discord.Game("=help|JP:"+str(db["jp"]/10)+"|"+str(mm)+"発言/m")
+  await client.change_presence(status=discord.Status.online, activity=game)
+@tasks.loop(seconds=180)
+async def narasi():
+  global mm,mml
   mm=0
   for i in mml:
     mm+=i
-  game = discord.Game("=help|JP:"+str(db["jp"]/10)+"|"+str(mm)+"発言/m")
-  await client.change_presence(status=discord.Status.online, activity=game)
 sex="丗糶背瀬畝競施世攻責勢谷扠設政生性製成説選聖"
 @client.event
 async def on_ready():
@@ -70,16 +79,56 @@ async def on_ready():
   db["gparmax"]=1000
   restc.start()
   showjp.start()
+  narasi.start()
+  #db["money"]["441098719803211788"]=7095110
   #db["mame"]={}
+  #for i in db["money"]:
+    #money[i[0]]=i[1]
+  #print(money)
+  #print(db["mame"])
+  #del db["mame"]['942291002717266002']
 async def is_owner(ctx):
   return ctx.author.id == 425948316334030848
 #helloworld
 @client.command()
 async def good(ctx):
     await ctx.reply("どーもデース")
+
+#豆知識カウンセト
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
+async def countmame(ctx):
+  """豆知識の数を表示します"""
+  ko=len(db["mame"])
+  await ctx.respond(f"{ko}個")
+#ping
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
+async def ping(ctx):
+  """pingしてpongします"""
+  raw_ping = client.latency
+  # ミリ秒に変換して丸める
+  ping = round(raw_ping * 1000)
+  # 送信する
+  await ctx.respond(f"Pong!\n"+str(ping)+"ms")
+#ランキング
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
+async def rank(ctx):
+  """所持金ランキングを表示します"""
+  rank = sorted(db["money"].items(), key=lambda x:x[1], reverse=True)
+  #print(type(rank[0]))
+  #print(rank[0])
+  ranks=""
+  n=0
+  for i in rank:
+    n+=1
+    if n==11:
+      break
+    ranks+=f"{n}:<@{i[0]}> {i[1]}A\n"
+  embed=discord.Embed(title="Moneyランキング",description=ranks)
+  await ctx.send(embed=embed)
 #ハグ
-@client.command()
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
 async def hug(ctx):
+  """ハグします。させます。"""
   await ctx.reply("ぎゅぅ...")
 @client.command()
 async def error_test(ctx):
@@ -96,13 +145,41 @@ async def addmame(ctx,*,mame):
   embed.set_footer(text=f"ID:{ctx.message.id}")
   await ctx.reply(embed=embed)
 #豆知識表示
-@client.command()
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
 async def mame(ctx):
+  """ヒカマニ豆知識を表示します"""
   id, mame = random.choice(list(db["mame"].items()))
   embed=discord.Embed(title="ヒカマニ豆知識",description=mame)
   #embed.set_author(name="MAMETISIKIN",url="",icon_url="")
-  embed.set_footer(text=f"ID:{ctx.message.id}")
-  await ctx.send(embed=embed)
+  embed.set_footer(text=f"ID:{id}")
+  await ctx.respond("ブンブンハロー",embed=embed)
+#テスト
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786])
+async def hello(
+  ctx,
+  name: Option(str, '名前を入力してください'),
+  gender: Option(str, '性別を選択してください', choices=['男性', '女性', 'その他']),
+  age: Option(int, '年齢を入力してください', required=False, default=18),
+):
+  """特に意味はないです。はい。"""
+  await ctx.respond(f'こんにちは、{name}さん')
+#豆知識削除
+@client.slash_command(guild_ids=[916817296993951794,876782808847220786],default_permission=False)
+@permissions.permission(user_id=OWNER)
+async def delmame(
+    ctx,
+    mid: Option(str, '消す豆知識のID'),
+  ):
+  """豆知識を消します。"""
+  try:
+    mame=db["mame"][mid]
+  except:
+    await ctx.respond("ﾅｲ!")
+    return
+  embed=discord.Embed(title="削除しました",description=db["mame"][mid])
+  embed.set_footer(text=f"ID:{mid}")
+  del db["mame"][mid]
+  await ctx.respond(embed=embed)
 #ギャンブル
 @client.command()
 async def gb(ctx,bm):
@@ -150,6 +227,8 @@ async def get_error(ctx, error_id):
 @client.event
 async def on_message(message):
   global sm,mt,ksc
+  if message.author.id==923174914532474890:
+    await message.channel.send(message.author.name+":"+message.content)
   ido=str(message.author.id)
   if ido not in db["money"]:
     db["money"][ido]=0
@@ -193,8 +272,8 @@ async def on_message(message):
       #await message.reply("あなたは今日の"+str(db["cc"])+"回目の発言者です！\nお礼として少しお金アゲます(+20A)")
   if random.randint(1,3000)==1:
     db["money"][str(message.author.id)]+=int(db["jp"]/10)
-    if mt==False:
-      await message.reply("ジャックポット("+str(int(db["jp"]/10))+")当てました！("+str(db["money"][str(message.author.id)])+")")
+    db["jpk"]+=1
+    await message.reply("ジャックポット("+str(int(db["jp"]/10))+")当てました！("+str(db["money"][str(message.author.id)])+")")
     db["jp"]=sjp
   if message.content=="=sd":
     await message.delete()
@@ -221,13 +300,6 @@ async def on_message(message):
   #KaSo
   if message.content=="=ks":
     await message.reply("https://cdn.discordapp.com/attachments/911515551715708958/929342630096158750/ks.mov")
-  #pinpon
-  if message.content=="=ping":
-    raw_ping = client.latency
-    # ミリ秒に変換して丸める
-    ping = round(raw_ping * 1000)
-    # 送信する
-    await message.reply(f"Pong!\n"+str(ping)+"ms")
   if message.content=="=help":
     await message.reply("""
 =kaso:過疎を防止します。
@@ -377,7 +449,8 @@ https://onl.tw/EnNEE4u :ステータスを表示します""")
       rm=await message.channel.fetch_message(message.reference.message_id)
       await rm.reply(jug[random.randint(0,len(jug)-1)])
   if message.content=="=join":
-    await message.author.voice.channel.connect()
+    pass
+    #await message.author.voice.channel.connect()
   if message.content[:5]=="=nick":
     me=await message.guild.fetch_member(441098719803211788)
     await me.edit(nick=message.content[6:])
